@@ -1,0 +1,22 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+  // This line works perfectly in Prisma v5, but fails in v7
+}
+
+model Link {
+  id            Int      @id @default(autoincrement())
+  originalUrl   String
+  shortCode     String   @unique
+  clicks        Int      @default(0)
+  lastClickedAt DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([shortCode])
+}
