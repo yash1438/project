@@ -1,16 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-export async function GET(request: Request, { params }: { params: { code: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ code: string }> }
+) {
+  // NEW: We must await the params object now
+  const { code } = await params;
+
   const link = await prisma.link.findUnique({
-    where: { shortCode: params.code },
+    where: { shortCode: code },
   });
 
   if (!link) {
     return NextResponse.json({ error: 'Short link not found' }, { status: 404 });
   }
 
-  // Increment click count and update timestamp (non-blocking technically preferred, but await is fine for this scale)
+  // Update stats
   await prisma.link.update({
     where: { id: link.id },
     data: {
